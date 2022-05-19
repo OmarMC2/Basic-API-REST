@@ -18,7 +18,13 @@ class Server {
         this.routes();
     }
     middlewares() {
-        this.app.use( cors() )
+        //CORS
+        this.app.use( cors() );
+        //Parseo y lectura de Middlewares
+        this.app.use( express.json() );
+        //Directorio Público
+        
+
     }
 
     routes () {
