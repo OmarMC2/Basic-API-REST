@@ -45,9 +45,6 @@ const userPost = async (req, res = response)=> {
 
     //Save on DB
 
-
-    
-
     await user.save();
 
     res.json({
