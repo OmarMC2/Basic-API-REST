@@ -3,24 +3,39 @@ const response = require('express');
 const bcryptjs = require('bcryptjs');
 const User = require('../models/user');
 
-const userGet = (req, res = response )=> {
-    
-    const queryParams = req.query;
+const userGet = async (req, res = response )=> {
+    const {limit = 5, minimum= 0 }= req.query;
+    const query = {state:true};
+    const [total, users] = await Promise.all([
+        User.find(query)
+            .limit(Number(limit))
+            .skip(Number(minimum)),
+        User.countDocuments(query)
+    ])
 
-    res.json({
-        msg: 'get API-Controller',
-        queryParams
-    })
-    console.log( 'get API-Controller', queryParams )
+    res.json( {
+        total,
+        users
+    } )
+    console.log( 'get API-Controller', resp )
 }
 
-const userPut = (req, res = response)=> {
+const userPut = async (req, res = response)=> {
     
-    const {id} = req.params;
+    const { id } = req.params;
+    const { _id, password, google, email, ...rest } = req.body;
+    console.log(req.body)
+    //Validate with DB
+
+    if (password){
+        const salt = bcryptjs.genSaltSync();
+        rest.password = bcryptjs.hashSync( password, salt );    
+    }
+     const user = await User.findByIdAndUpdate( id, rest, { new: true } )
     
     res.json({
         msg: 'put API-Controller',
-        id
+        user 
     })
     console.log( 'put API-Controller', id )
 }
@@ -31,13 +46,7 @@ const userPost = async (req, res = response)=> {
 
     const user = new User( {name, email, password, role} );
 
-    //Verify if email exist in DB
-    const emailExist = await User.findOne({ email });
-    if( emailExist ){
-        return res.status(400).json({
-            msg: 'The email is already registered'
-        }) 
-    }
+    
 
     //Encript password
     const salt = bcryptjs.genSaltSync();
@@ -47,16 +56,20 @@ const userPost = async (req, res = response)=> {
 
     await user.save();
 
-    res.json({
-        msg: 'post API-Controller',
-        user
-    })
+    res.json(user)
     console.log( 'post API-Controller', user)
 }
 
-const userDelete = (req, res)=> {
+const userDelete = async (req, res)=> {
+    const {id} = req.params;
+
+    //Delete from Database
+    //const user = await User.findByIdAndDelete(id);
+    const user = await User.findByIdAndUpdate(id, {state:false})
+    console.log(id)
     res.json({
-        msg: 'Delete API-Controller'
+        msg: 'Delete API-Controller',
+        user
     })
 }
 const userPatch = (req, res = response)=> {
