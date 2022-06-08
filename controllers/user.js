@@ -17,7 +17,7 @@ const userGet = async (req, res = response )=> {
         total,
         users
     } )
-    console.log( 'get API-Controller', resp )
+    console.log( 'get API-Controller' )
 }
 
 const userPut = async (req, res = response)=> {
